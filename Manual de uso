@@ -1,0 +1,67 @@
+
+---
+
+## 📘 Manual de Usuario (Versión genérica)
+
+### **Manual de Usuario: Generación Masiva de Certificados PKI**  
+**Versión:** 1.0  
+**Fecha:** 22 de octubre de 2025  
+**Aplicación:** `GenerarCertificadosMasivos.ps1` v1.5.1NVSC
+
+---
+
+### 1. Objetivo
+
+Automatizar la creación de certificados digitales para usuarios finales en un entorno corporativo con **Windows PKI**, garantizando que cada certificado incluya una **llave privada exportable** y cumpla con los requisitos de autenticación y correo seguro.
+
+---
+
+### 2. Requisitos Previos
+
+#### 2.1. Infraestructura
+- Servidor de **Enterprise CA** operativo.
+- Plantilla de certificado **publicada y aprobada** (ej. `UserManual_SHA256`), con las siguientes propiedades:
+  - **Uso de clave**: Firma y cifrado.
+  - **Extensión de uso mejorado**: Autenticación de cliente + Correo seguro.
+  - **Permitir llave privada exportable**.
+
+#### 2.2. Permisos
+El usuario que ejecuta el script debe:
+- Tener derecho a **solicitar certificados** con la plantilla especificada.
+- Tener **acceso al almacén de certificados del usuario actual** (`CurrentUser\My`).
+
+#### 2.3. Archivo de entrada (CSV)
+Formato requerido:
+| UPN                    | SamAccountName |
+|------------------------|----------------|
+| juan.perez@dominio.local | juan.perez     |
+| maria.lopez@dominio.local| maria.lopez    |
+
+> Nota: El campo `UPN` se usa solo para registro. El `SamAccountName` define el nombre del archivo PFX y el CN/SAN.
+
+---
+
+### 3. Configuración del Script
+
+Abra `GenerarCertificadosMasivos.ps1` y ajuste las siguientes variables:
+
+| Variable               | Descripción |
+|------------------------|-------------|
+| `$CsvPath`             | Ruta al archivo CSV de entrada. |
+| `$PfxPassword`         | Contraseña para proteger los archivos PFX. |
+| `$LocalPath`           | Carpeta de salida para los archivos `.pfx`. |
+| `$CAServer` / `$CAName`| Nombre del servidor y CA (ej. `CASERVER01\CASERVER01-CA`). |
+| `$CertificateTemplate` | Nombre exacto de la plantilla de certificado. |
+
+> 🔒 **Recomendación de seguridad**: No almacene contraseñas en texto claro en el script en entornos productivos. Use un archivo externo con permisos restringidos o un gestor de secretos.
+
+---
+
+### 4. Ejecución
+
+1. Abra **PowerShell como el usuario autorizado** (no como cuenta de servicio sin perfil).
+2. Navegue al directorio del script.
+3. Ejecute:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+   .\GenerarCertificadosMasivos.ps1
